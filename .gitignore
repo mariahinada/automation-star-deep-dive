@@ -9,5 +9,8 @@ node_modules/
 npm-debug.log*
 *.log
 
+# Test reports
+mochawesome-report/
+
 # OS
 .DS_Store
