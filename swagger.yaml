@@ -1,0 +1,210 @@
+openapi: 3.0.3
+info:
+  title: E-commerce REST API
+  description: REST API for e-commerce with JWT authentication and checkout support.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+paths:
+  /register:
+    post:
+      summary: Register a new user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: newuser@example.com
+                password:
+                  type: string
+                  format: password
+                  example: mypassword
+                name:
+                  type: string
+                  example: New User
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Missing required fields
+        '409':
+          description: Email already registered
+  /login:
+    post:
+      summary: Login and receive a JWT token
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: alice@example.com
+                password:
+                  type: string
+                  format: password
+                  example: password123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Missing required fields
+        '401':
+          description: Invalid credentials
+  /checkout:
+    post:
+      summary: Perform a checkout (authenticated users only)
+      tags:
+        - Checkout
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+                - paymentMethod
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - productId
+                    properties:
+                      productId:
+                        type: integer
+                        example: 1
+                      quantity:
+                        type: integer
+                        minimum: 1
+                        default: 1
+                        example: 2
+                paymentMethod:
+                  type: string
+                  enum:
+                    - cash
+                    - credit_card
+                  example: cash
+      responses:
+        '200':
+          description: Checkout completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  userId:
+                    type: integer
+                  order:
+                    $ref: '#/components/schemas/Order'
+        '400':
+          description: Invalid request or insufficient stock
+        '401':
+          description: Authentication required
+        '404':
+          description: Product not found
+  /health:
+    get:
+      summary: Health check
+      tags:
+        - System
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+    Order:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              productId:
+                type: integer
+              name:
+                type: string
+              price:
+                type: number
+              quantity:
+                type: integer
+              lineTotal:
+                type: number
+        paymentMethod:
+          type: string
+        subtotal:
+          type: number
+        discount:
+          type: number
+        total:
+          type: number
