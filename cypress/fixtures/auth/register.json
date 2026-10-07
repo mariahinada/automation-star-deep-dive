@@ -1,0 +1,17 @@
+{
+  "validUser": {
+    "password": "mypassword"
+  },
+  "missingEmail": {
+    "password": "mypassword",
+    "name": "Test User"
+  },
+  "missingPassword": {
+    "email": "test@example.com",
+    "name": "Test User"
+  },
+  "missingName": {
+    "email": "test@example.com",
+    "password": "mypassword"
+  }
+}
